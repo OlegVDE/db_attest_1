@@ -1,0 +1,19 @@
+with trip_start as (
+select t.start_station_id as station_id, count(t.start_station_id) as starts_count, 
+avg(t.duration_minutes) as avg_duration_start, t.year
+from public.trips t
+group by t.start_station_id, t.year),
+trip_end as (
+select t.end_station_id as station_id, count(t.end_station_id) as ends_count, 
+avg(t.duration_minutes) as avg_duration_end, t.year
+from public.trips t
+group by t.end_station_id, t.year)
+select s.station_id, st.starts_count as start_cnt, en.ends_count as ends_cnt, (st.starts_count + en.ends_count) as total,
+st.avg_duration_start, en.avg_duration_end, st.year, en.year
+from public.stations s 
+left join trip_start as st 
+on s.station_id = st.station_id
+left join trip_end as en
+on s.station_id = en.station_id
+where s.status  = 'active' 
+order by st.avg_duration_start
